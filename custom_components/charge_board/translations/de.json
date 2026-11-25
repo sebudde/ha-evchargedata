@@ -1,0 +1,208 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "EVChargeData",
+        "description": "Zeichnet Ladevorgänge von Elektroautos aus deinen vorhandenen Entitäten auf. Ladepunkte und Fahrzeuge fügst du danach auf der Seite der Integration hinzu."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "EVChargeData ist bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Tarif",
+        "description": "Entweder ein Preissensor oder zwei feste Preise mit einer Nachtstrom-Quelle (Binärsensor oder Zeitfenster). Alles leer lassen, um Ladevorgänge ohne Kosten aufzuzeichnen.",
+        "data": {
+          "price_entity": "Preissensor (pro kWh)",
+          "off_peak_price": "Preis Nebenzeit (pro kWh)",
+          "peak_price": "Preis Hauptzeit (pro kWh)",
+          "off_peak_entity": "Gerade Nebenzeit (Binärsensor)",
+          "day_type_entity": "Tagestyp (z. B. Tempo-Farbe)",
+          "off_peak_windows": "Zeitfenster Nebenzeit",
+          "reimbursement_price": "Erstattungspreis (pro kWh)",
+          "overview_style": "Darstellung der Übersicht",
+          "notify_service": "Zu benachrichtigendes Telefon",
+          "notifications": "Benachrichtigungen",
+          "fuel_price_entity": "Benzinpreis (Entität)",
+          "fuel_price": "Fester Benzinpreis (pro Liter)"
+        },
+        "data_description": {
+          "price_entity": "Hat Vorrang vor den festen Preisen.",
+          "off_peak_windows": "Zum Beispiel 22:00-06:00, mehrere durch Kommas getrennt. Wird ignoriert, wenn ein Binärsensor für die Nebenzeit gesetzt ist.",
+          "reimbursement_price": "Optional. Pauschaler Preis für eine zweite Abrechnung, z. B. was der Arbeitgeber erstattet. Die Statistik zeigt den Betrag je Monat und exportiert ihn als PDF; die erfassten Kosten bleiben unverändert.",
+          "notify_service": "Die Home-Assistant-App auf diesem Telefon erhält Benachrichtigungen beim Einstecken, Ladebeginn, Erreichen des Ziels und Ausstecken (mit Zusammenfassung). Leer: keine Benachrichtigung; die Ereignisse charge_board_* werden trotzdem ausgelöst.",
+          "fuel_price_entity": "Zum Beispiel eine Tankstelle aus einer Spritpreis-Integration. Hat Vorrang vor dem festen Preis.",
+          "day_type_entity": "Optional. Entität, deren Zustand der Tagestyp des Vertrags ist (Tempo: der Sensor der aktuellen Farbe). Teilt die Kosten in der Statistik nach Tarifstufen auf."
+        }
+      }
+    },
+    "error": {
+      "invalid_windows": "Format HH:MM-HH:MM, mehrere durch Kommas getrennt (z. B. 22:00-06:00, 12:00-14:00)."
+    }
+  },
+  "config_subentries": {
+    "charger": {
+      "initiate_flow": {
+        "user": "Ladepunkt hinzufügen"
+      },
+      "entry_type": "Ladepunkt",
+      "step": {
+        "user": {
+          "title": "Ladepunkt hinzufügen",
+          "data": {
+            "name": "Name",
+            "power_entity": "Ladeleistung",
+            "energy_entity": "Energie (kWh)",
+            "plug_entity": "Eingesteckt",
+            "plugged_states": "Zustände für „eingesteckt“",
+            "switch_entity": "Ladeschalter",
+            "power_threshold_w": "Ladeschwelle",
+            "gap_hours": "Pause bis Sitzungsende ohne Stecker-Entität"
+          },
+          "data_description": {
+            "power_entity": "Leistungssensor in W oder kW.",
+            "energy_entity": "Sitzungs- oder Gesamtzähler des Ladepunkts; wenn gesetzt, kommt die Energie der Ladevorgänge von dort.",
+            "plug_entity": "Binärsensor oder ein Sensor mit den Zuständen unten.",
+            "plugged_states": "Für einen Binärsensor leer lassen (an = eingesteckt).",
+            "switch_entity": "Wird von EVChargeData ausgeschaltet, wenn ein Ziel „Zuhause“ erreicht ist (benötigt die Stecker-Entität).",
+            "power_threshold_w": "Es wird geladen, wenn die Leistung über diesem Wert liegt.",
+            "gap_hours": "Ohne Stecker-Entität endet ein Ladevorgang nach so langer Zeit ohne Laden."
+          }
+        },
+        "reconfigure": {
+          "title": "Ladepunkt bearbeiten",
+          "data": {
+            "name": "Name",
+            "power_entity": "Ladeleistung",
+            "energy_entity": "Energie (kWh)",
+            "plug_entity": "Eingesteckt",
+            "plugged_states": "Zustände für „eingesteckt“",
+            "switch_entity": "Ladeschalter",
+            "power_threshold_w": "Ladeschwelle",
+            "gap_hours": "Pause bis Sitzungsende ohne Stecker-Entität"
+          },
+          "data_description": {
+            "power_entity": "Leistungssensor in W oder kW.",
+            "energy_entity": "Sitzungs- oder Gesamtzähler des Ladepunkts; wenn gesetzt, kommt die Energie der Ladevorgänge von dort.",
+            "plug_entity": "Binärsensor oder ein Sensor mit den Zuständen unten.",
+            "plugged_states": "Für einen Binärsensor leer lassen (an = eingesteckt).",
+            "switch_entity": "Wird von EVChargeData ausgeschaltet, wenn ein Ziel „Zuhause“ erreicht ist (benötigt die Stecker-Entität).",
+            "power_threshold_w": "Es wird geladen, wenn die Leistung über diesem Wert liegt.",
+            "gap_hours": "Ohne Stecker-Entität endet ein Ladevorgang nach so langer Zeit ohne Laden."
+          }
+        }
+      },
+      "abort": {
+        "reconfigure_successful": "Gespeichert."
+      }
+    },
+    "vehicle": {
+      "initiate_flow": {
+        "user": "Fahrzeug hinzufügen"
+      },
+      "entry_type": "Fahrzeug",
+      "step": {
+        "user": {
+          "title": "Fahrzeug hinzufügen",
+          "data": {
+            "name": "Name",
+            "capacity_kwh": "Nutzbare Kapazität",
+            "soc_entity": "Akkustand",
+            "target_entity": "Entität für Ladeziel",
+            "target_fixed": "Festes Ladeziel",
+            "target_source": "Wer stoppt beim Ziel",
+            "odometer_entity": "Kilometerstand",
+            "fuel_l100": "Benzinverbrauch zum Vergleich"
+          },
+          "data_description": {
+            "soc_entity": "Sensor in %. Ohne ihn haben Ladevorgänge keinen Start- und Endstand.",
+            "target_fixed": "Wird verwendet, wenn keine Entität für das Ladeziel gesetzt ist.",
+            "target_source": "Fahrzeug: Das Auto stoppt selbst bei seinem Ziel. Zuhause: EVChargeData schaltet den Ladeschalter aus, wenn das Ziel erreicht ist.",
+            "fuel_l100": "Liter pro 100 km eines vergleichbaren Benziners, für den Vergleich in der Statistik."
+          }
+        },
+        "reconfigure": {
+          "title": "Fahrzeug bearbeiten",
+          "data": {
+            "name": "Name",
+            "capacity_kwh": "Nutzbare Kapazität",
+            "soc_entity": "Akkustand",
+            "target_entity": "Entität für Ladeziel",
+            "target_fixed": "Festes Ladeziel",
+            "target_source": "Wer stoppt beim Ziel",
+            "odometer_entity": "Kilometerstand",
+            "fuel_l100": "Benzinverbrauch zum Vergleich"
+          },
+          "data_description": {
+            "soc_entity": "Sensor in %. Ohne ihn haben Ladevorgänge keinen Start- und Endstand.",
+            "target_fixed": "Wird verwendet, wenn keine Entität für das Ladeziel gesetzt ist.",
+            "target_source": "Fahrzeug: Das Auto stoppt selbst bei seinem Ziel. Zuhause: EVChargeData schaltet den Ladeschalter aus, wenn das Ziel erreicht ist.",
+            "fuel_l100": "Liter pro 100 km eines vergleichbaren Benziners, für den Vergleich in der Statistik."
+          }
+        }
+      },
+      "abort": {
+        "reconfigure_successful": "Gespeichert."
+      }
+    }
+  },
+  "selector": {
+    "overview_style": {
+      "options": {
+        "detailed": "Ausführlich",
+        "compact": "Kompakt"
+      }
+    },
+    "notifications": {
+      "options": {
+        "plugged": "Eingesteckt",
+        "started": "Laden gestartet",
+        "reached": "Ziel erreicht",
+        "unplugged": "Ausgesteckt (Zusammenfassung)"
+      }
+    },
+    "target_source": {
+      "options": {
+        "vehicle": "Das Fahrzeug (stoppt selbst)",
+        "home": "Zuhause (EVChargeData stoppt das Laden)"
+      }
+    }
+  },
+  "entity": {
+    "select": {
+      "vehicle": {
+        "name": "Fahrzeug"
+      }
+    },
+    "sensor": {
+      "session_energy": {
+        "name": "Energie Ladevorgang"
+      },
+      "session_cost": {
+        "name": "Kosten Ladevorgang"
+      },
+      "consumption_since_charge": {
+        "name": "Verbrauch seit dem Laden"
+      }
+    }
+  },
+  "services": {
+    "rebuild_history": {
+      "name": "Aus dem Verlauf neu aufbauen",
+      "description": "Spielt den Verlauf von Home Assistant erneut ab (alles, was der Recorder noch aufbewahrt, meist 10 Tage) und ergänzt Ladevorgänge, die nicht aufgezeichnet wurden, oder ersetzt einen nur teilweise aufgezeichneten. Von Hand korrigierte Ladevorgänge bleiben erhalten.",
+      "fields": {
+        "start": {
+          "name": "Start",
+          "description": "Ab diesem Zeitpunkt abspielen (Standard: der älteste aufbewahrte Verlauf)."
+        },
+        "default_day_type": {
+          "name": "Standard-Tagestyp",
+          "description": "Wird Ladevorgängen gegeben, die nach dem Lesen des Verlaufs noch keinen haben (z. B. Bleu). Ein vorhandener Tagestyp wird nie geändert."
+        }
+      }
+    }
+  }
+}

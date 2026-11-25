@@ -4,7 +4,12 @@ from zoneinfo import ZoneInfo
 import pytest
 
 from custom_components.charge_board.model import Session, TariffSlice
-from custom_components.charge_board.stats import month_rows, session_bands, total_row
+from custom_components.charge_board.stats import (
+    add_reimbursement,
+    month_rows,
+    session_bands,
+    total_row,
+)
 
 PARIS = ZoneInfo("Europe/Paris")
 
@@ -180,3 +185,17 @@ def test_merging_a_legacy_session_keeps_every_euro_in_the_bands():
     merged = merge_sessions(legacy, new)
     (row,) = month_rows([merged], ["2026-10"], {}, PARIS)
     assert sum(row["band_cost"].values()) == pytest.approx(row["cost"]) == pytest.approx(3.0)
+
+
+def test_reimbursement_is_the_energy_at_the_flat_price():
+    rows = month_rows([s(OCT_10, kwh=10.0), s(OCT_20, kwh=5.0)], ["2026-10", "2026-11"], {}, PARIS)
+    total = total_row(rows)
+    add_reimbursement([*rows, total], 0.34)
+    assert [r["reimbursement"] for r in rows] == pytest.approx([5.1, 0.0])
+    assert total["reimbursement"] == pytest.approx(5.1)
+
+
+def test_no_reimbursement_without_a_price():
+    rows = month_rows([s(OCT_10)], ["2026-10"], {}, PARIS)
+    add_reimbursement(rows, None)
+    assert rows[0]["reimbursement"] is None

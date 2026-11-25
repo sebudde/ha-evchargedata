@@ -1,9 +1,10 @@
 import { LitElement, css, html, nothing, svg, type PropertyValues } from "lit";
-import { getOverview, getStats, type HomeAssistant, type Overview, type Stats, type StatsRow } from "./api";
+import { getOverview, getSessions, getStats, type HomeAssistant, type Overview, type Stats, type StatsRow } from "./api";
 import { bandColor, bandLabel, bandOrder } from "./bands";
 import { barsFor } from "./chart";
 import { DASH, formatCost, formatDelta, formatEnergy, formatPercent, monthOf } from "./format";
 import { errorKey, langOf, localeOf, t, type Key } from "./i18n";
+import { statementFileName, statementPdf, type StatementKind } from "./report";
 import { cardStyles } from "./styles";
 
 const BAR_HEIGHT = 110;
@@ -18,6 +19,8 @@ export class ChargeBoardStats extends LitElement {
     _error: { state: true },
     _vehicle: { state: true },
     _year: { state: true },
+    _exporting: { state: true },
+    _exportFailed: { state: true },
   };
 
   hass!: HomeAssistant;
@@ -28,6 +31,8 @@ export class ChargeBoardStats extends LitElement {
   private _vehicle?: string; // "" = all vehicles; the first vehicle by default
   private _year = new Date().getFullYear();
   private _req = 0;
+  private _exporting?: string; // "YYYY-MM|kind" while its PDF is being made
+  private _exportFailed = false;
 
   protected updated(changed: PropertyValues) {
     if (["version", "_vehicle", "_year"].some((k) => changed.has(k)) && this.hass) this._fetch();
@@ -169,11 +174,13 @@ export class ChargeBoardStats extends LitElement {
     const now = monthOf(Date.now() / 1000, this.hass.config.time_zone);
     const shown = rows.filter((r) => r.month! <= now && (r.sessions || r.km != null));
     const kwh = (v: number) => v.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const price = this._stats!.reimbursement_price;
     const line = (r: StatsRow, name: string, cls = "") => html`<tr class=${cls}>
       <td>${name}</td>
       <td>${r.sessions}</td>
       <td>${kwh(r.energy_kwh)}</td>
       <td><b>${formatCost(r.cost, currency, locale)}</b></td>
+      ${price == null ? nothing : html`<td>${formatCost(r.reimbursement, currency, locale)}</td>`}
       <td>${r.off_peak_share == null ? DASH : formatPercent(r.off_peak_share, locale)}</td>
       <td>
         ${r.km == null ? DASH : Math.round(r.km).toLocaleString(locale)}${r.km_partial ? " *" : ""}
@@ -182,9 +189,22 @@ export class ChargeBoardStats extends LitElement {
       <td class=${r.savings != null && r.savings > 0 ? "good" : ""}>
         ${r.savings == null ? DASH : formatCost(-r.savings, currency, locale)}
       </td>
+      <td>${r.month && r.sessions ? html`<span class="export">${this._exportButtons(r.month, price != null)}</span>` : nothing}</td>
     </tr>`;
-    const cols: Key[] = ["col_month", "col_sessions", "col_kwh", "col_cost", "col_hc", "col_km", "col_per_100", "col_vs_petrol"];
-    return html`<div class="scroll">
+    const cols: Key[] = [
+      "col_month",
+      "col_sessions",
+      "col_kwh",
+      "col_cost",
+      ...(price == null ? [] : (["col_reimbursement"] as Key[])),
+      "col_hc",
+      "col_km",
+      "col_per_100",
+      "col_vs_petrol",
+      "col_export",
+    ];
+    return html`${this._exportFailed ? html`<p class="error">${this._t("export_failed")}</p>` : nothing}
+      <div class="scroll">
       <table>
         <thead>
           <tr>${cols.map((c) => html`<th>${this._t(c)}</th>`)}</tr>
@@ -195,6 +215,53 @@ export class ChargeBoardStats extends LitElement {
         </tbody>
       </table>
     </div>`;
+  }
+
+  /** The month's PDF statements: the reimbursement (with a reimbursement price) and the cost. */
+  private _exportButtons(month: string, reimbursement: boolean) {
+    const kinds: [StatementKind, Key][] = [
+      ...(reimbursement ? [["reimbursement", "export_reimbursement"] as [StatementKind, Key]] : []),
+      ["cost", "export_cost"],
+    ];
+    return kinds.map(
+      ([kind, label]) => html`<button
+        class="chip"
+        ?disabled=${this._exporting !== undefined}
+        aria-busy=${this._exporting === `${month}|${kind}`}
+        @click=${() => this._export(month, kind)}
+      >
+        ${this._t(label)}
+      </button>`,
+    );
+  }
+
+  /** Builds the month's statement from its sessions (same filters as the row) and downloads it. */
+  private async _export(month: string, kind: StatementKind) {
+    if (this._exporting !== undefined) return;
+    this._exporting = `${month}|${kind}`;
+    try {
+      const vid = this._vehicle || undefined;
+      const { sessions } = await getSessions(this.hass, { month, ...(vid && { vehicle_id: vid }) });
+      const lang = langOf(this.hass);
+      const pdf = statementPdf({
+        kind,
+        month,
+        sessions,
+        vehicle: vid ? (this._overview?.vehicles.find((v) => v.id === vid)?.name ?? null) : null,
+        price: this._stats!.reimbursement_price,
+        currency: this._stats!.currency,
+        lang,
+        locale: localeOf(this.hass),
+        timeZone: this.hass.config.time_zone,
+        now: Date.now() / 1000,
+      });
+      download(pdf, statementFileName(kind, month, lang));
+      this._exportFailed = false;
+    } catch {
+      this._exportFailed = true;
+    } finally {
+      this._exporting = undefined;
+    }
   }
 
   static styles = [
@@ -230,8 +297,35 @@ export class ChargeBoardStats extends LitElement {
       tr.total {
         font-weight: 600;
       }
+      .export {
+        display: inline-flex;
+        gap: 6px;
+      }
+      .export button.chip {
+        font-size: 0.85em;
+        padding: 3px 8px;
+      }
+      button.chip:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+      button.chip[aria-busy="true"] {
+        cursor: progress;
+      }
     `,
   ];
+}
+
+/** Saves a file through the browser. */
+function download(bytes: Uint8Array, name: string) {
+  const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: "application/pdf" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
 customElements.define("charge-board-stats", ChargeBoardStats);

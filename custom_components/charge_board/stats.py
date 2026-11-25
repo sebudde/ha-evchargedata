@@ -100,6 +100,13 @@ def month_rows(
     return rows
 
 
+def add_reimbursement(rows: list[dict], price: float | None) -> None:
+    """Amount of each row at a flat price per kWh (e.g. what an employer reimburses);
+    None without that price."""
+    for row in rows:
+        row["reimbursement"] = row["energy_kwh"] * price if price is not None else None
+
+
 def total_row(rows: list[dict], until: str | None = None) -> dict:
     """Sums of the rows up to `until` (the current month); km only when every month has them,
     ratios recomputed on the sums."""

@@ -23,6 +23,7 @@ Everything is done in the UI. The integration is a single entry; chargers and ve
 - *Off-peak price* / *Peak price*: two fixed prices, used with an off-peak source.
 - *Off-peak now (binary sensor)* or *Off-peak windows* (e.g. `22:00-06:00`, several separated by commas; ignored when the binary sensor is set). The off-peak source also gives the off-peak/peak split shown in the panel, even with a price sensor.
 - *Day type* (optional): an entity whose state is the contract's day type, e.g. the Tempo colour (`sensor.rte_tempo_couleur_actuelle`). Each session then records its energy and cost per **tariff band** (day type × off-peak/peak): 1 band on a Base contract, 2 with off-peak/peak, 6 with Tempo. The price still comes from the price sensor or the fixed prices; a band is never guessed from a price.
+- *Reimbursement price (per kWh)* (optional): a flat price for a second statement, e.g. what an employer reimburses for charging a company car at home. It never changes the recorded cost.
 - *Overview style*: Detailed or Compact.
 
 **Add charger**
@@ -80,7 +81,9 @@ The **Statistics** tab answers what charging costs, month by month, for one vehi
 - the last 30 days, whatever the year shown: the same figures, the cost compared with the 30 days before (representative even early in the month);
 - the current month: cost and change vs the previous month, energy and sessions, off-peak share, cost per 100 km, savings vs a petrol car;
 - the cost of each month, stacked by tariff band (Tempo: blue, white, red days, off-peak lighter and peak darker; without a day type: off-peak and peak); the legend lists the bands of the year shown;
-- a table of the year's months and its total.
+- a table of the year's months and its total; with a reimbursement price, a *Reimbursement* column (the month's energy at that price).
+
+Each month of the table has PDF exports, for the vehicle selected (or all): **Employer PDF** (with a reimbursement price) lists the month's sessions with their energy at the flat price; **Landlord PDF** lists them with their recorded cost, and its total is the month's cost in the table. The PDFs follow Home Assistant's language (French, German, otherwise English). The reimbursement price is the current one: changing it changes every month.
 
 Distances come from Home Assistant's long-term statistics of the vehicle's **odometer** (vehicle setting; the sensor needs a `state_class`). The first month of these statistics only has the km driven since they began (marked *).
 
@@ -150,6 +153,7 @@ Tout se fait dans l'interface. L'intégration est une entrée unique ; chargeurs
 - *Off-peak price* / *Peak price* : deux prix fixes (heures creuses / pleines), à utiliser avec une source d'heures creuses.
 - *Off-peak now (binary sensor)* ou *Off-peak windows* (plages, p. ex. `22:00-06:00`, plusieurs séparées par des virgules ; ignorées si le capteur binaire est renseigné). Cette source donne aussi la répartition HC/HP affichée, même avec un capteur de prix.
 - *Type de jour* (facultatif) : une entité dont l'état est le type de jour du contrat, par exemple la couleur Tempo (`sensor.rte_tempo_couleur_actuelle`). Chaque session enregistre alors son énergie et son coût par **tranche** (type de jour × HC/HP) : 1 tranche en Base, 2 en HP/HC, 6 en Tempo. Le prix vient toujours du capteur de prix ou des prix fixes ; une tranche n'est jamais déduite d'un prix.
+- *Prix de remboursement (par kWh)* (facultatif) : un prix forfaitaire pour un second relevé, par exemple ce que rembourse un employeur pour la recharge d'une voiture de fonction à domicile. Il ne change jamais le coût enregistré.
 - *Overview style* : Detailed (détaillée) ou Compact (compacte).
 
 **Ajouter un chargeur**
@@ -207,7 +211,9 @@ L'onglet **Statistiques** dit ce que coûte la recharge, mois par mois, pour un 
 - les 30 derniers jours, quelle que soit l'année affichée : les mêmes chiffres, le coût comparé aux 30 jours précédents (représentatif même en début de mois) ;
 - le mois en cours : coût et écart avec le mois précédent, énergie et sessions, part en heures creuses, coût aux 100 km, économie par rapport à une voiture essence ;
 - le coût de chaque mois, empilé par tranche (Tempo : jours bleus, blancs, rouges, HC en clair et HP en foncé ; sans type de jour : heures creuses et pleines) ; la légende ne montre que les tranches de l'année affichée ;
-- le tableau des mois de l'année et son total.
+- le tableau des mois de l'année et son total ; avec un prix de remboursement, une colonne *Remboursement* (l'énergie du mois à ce prix).
+
+Chaque mois du tableau s'exporte en PDF, pour le véhicule choisi (ou tous) : **PDF employeur** (avec un prix de remboursement) liste les sessions du mois avec leur énergie au prix forfaitaire ; **PDF propriétaire** les liste avec leur coût enregistré, son total est le coût du mois du tableau. Les PDF suivent la langue de Home Assistant (français, allemand, sinon anglais). Le prix de remboursement est celui du moment : le changer change tous les mois.
 
 Les distances viennent des statistiques long terme de Home Assistant pour le **compteur kilométrique** du véhicule (réglage du véhicule ; le capteur doit avoir un `state_class`). Le premier mois de ces statistiques n'a que les km parcourus depuis leur début (marqués *).
 

@@ -166,3 +166,15 @@ async def test_options_accept_a_day_type_entity(hass):
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert entry.options["day_type_entity"] == "sensor.tempo"
+
+
+async def test_options_store_a_reimbursement_price(hass):
+    entry = MockConfigEntry(domain="charge_board")
+    entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"price_entity": "input_number.price", "reimbursement_price": 0.34}
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert entry.options["reimbursement_price"] == 0.34

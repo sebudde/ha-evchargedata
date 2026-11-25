@@ -131,6 +131,7 @@ export interface StatsRow {
   fuel_cost: number | null;
   savings: number | null;
   kwh_100km?: number | null;
+  reimbursement?: number | null; // energy at the reimbursement price (Statistics only)
 }
 
 export interface Stats {
@@ -138,6 +139,7 @@ export interface Stats {
   rows: StatsRow[];
   total: StatsRow;
   rolling: { current: StatsRow; previous: StatsRow }; // last 30 days and the 30 before
+  reimbursement_price: number | null; // per kWh, e.g. what an employer reimburses
 }
 
 export interface ConfigItem {

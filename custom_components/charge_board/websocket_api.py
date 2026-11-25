@@ -18,6 +18,7 @@ from .hub import Hub
 from .model import Session
 from .stats import (
     MIN_KM_FOR_CONSUMPTION,
+    add_reimbursement,
     consumption_since,
     month_rows,
     period_row,
@@ -255,11 +256,15 @@ async def stats(hub: Hub, msg: dict) -> dict:
         # Only its cost is shown (the delta): no odometer query.
         "previous": await _rolling(hub, None, found, t - 2 * ROLLING_S, t - ROLLING_S),
     }
+    total = total_row(rows, _local_month(t))
+    price = hub.options.get("reimbursement_price")
+    add_reimbursement([*rows, total], price)
     return {
         "currency": hub.hass.config.currency,
         "rows": rows,
-        "total": total_row(rows, _local_month(t)),
+        "total": total,
         "rolling": rolling,
+        "reimbursement_price": price,
     }
 
 

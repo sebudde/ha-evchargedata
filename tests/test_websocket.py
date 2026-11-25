@@ -224,6 +224,33 @@ async def test_stats_for_all_vehicles_has_no_km(env, monkeypatch):
     assert res["rows"][9]["sessions"] == 1
 
 
+async def test_stats_without_a_reimbursement_price(env):
+    hub, _cid, vid, ws = env
+    await put(hub, sess("a", ts(2026, 10, 10, 22), kwh=10, vehicle_id=vid))
+    await ws.send_json({"id": 1, "type": "charge_board/stats", "year": 2026})
+    res = (await ws.receive_json())["result"]
+    assert res["reimbursement_price"] is None
+    assert res["rows"][9]["reimbursement"] is None
+
+
+async def test_stats_reimbursement_at_the_flat_price(hass, env):
+    _hub, _cid, vid, ws = env
+    entry = hass.config_entries.async_entries("charge_board")[0]
+    hass.config_entries.async_update_entry(
+        entry, options={**entry.options, "reimbursement_price": 0.34}
+    )
+    await hass.async_block_till_done()  # the update listener reloads the entry
+    hub = entry.runtime_data
+    await put(hub, sess("a", ts(2026, 10, 10, 22), kwh=10, cost=3.1, vehicle_id=vid))
+    await ws.send_json({"id": 1, "type": "charge_board/stats", "year": 2026})
+    res = (await ws.receive_json())["result"]
+    assert res["reimbursement_price"] == 0.34
+    october = res["rows"][9]
+    assert october["reimbursement"] == pytest.approx(3.4)
+    assert october["cost"] == pytest.approx(3.1)  # the real cost stays as it is
+    assert res["total"]["reimbursement"] == pytest.approx(3.4)
+
+
 async def test_vehicle_command_shapes_config_and_flags_ignored_cut(env, monkeypatch):
     hub, _cid, vid, ws = env  # VEHICLE has no target entity: home objective; CHARGER has no switch
 
