@@ -23,6 +23,7 @@
           "day_type_entity": "Tagestyp (z. B. Tempo-Farbe)",
           "off_peak_windows": "Zeitfenster Nebenzeit",
           "reimbursement_price": "Erstattungspreis (pro kWh)",
+          "statement_name": "Name auf den PDF-Abrechnungen",
           "overview_style": "Darstellung der Übersicht",
           "notify_service": "Zu benachrichtigendes Telefon",
           "notifications": "Benachrichtigungen",
@@ -33,6 +34,7 @@
           "price_entity": "Hat Vorrang vor den festen Preisen.",
           "off_peak_windows": "Zum Beispiel 22:00-06:00, mehrere durch Kommas getrennt. Wird ignoriert, wenn ein Binärsensor für die Nebenzeit gesetzt ist.",
           "reimbursement_price": "Optional. Pauschaler Preis für eine zweite Abrechnung, z. B. was der Arbeitgeber erstattet. Die Statistik zeigt den Betrag je Monat und exportiert ihn als PDF; die erfassten Kosten bleiben unverändert.",
+          "statement_name": "Optional. Dein Name, erscheint auf den PDFs für Arbeitgeber und Vermieter.",
           "notify_service": "Die Home-Assistant-App auf diesem Telefon erhält Benachrichtigungen beim Einstecken, Ladebeginn, Erreichen des Ziels und Ausstecken (mit Zusammenfassung). Leer: keine Benachrichtigung; die Ereignisse charge_board_* werden trotzdem ausgelöst.",
           "fuel_price_entity": "Zum Beispiel eine Tankstelle aus einer Spritpreis-Integration. Hat Vorrang vor dem festen Preis.",
           "day_type_entity": "Optional. Entität, deren Zustand der Tagestyp des Vertrags ist (Tempo: der Sensor der aktuellen Farbe). Teilt die Kosten in der Statistik nach Tarifstufen auf."
@@ -109,6 +111,7 @@
           "title": "Fahrzeug hinzufügen",
           "data": {
             "name": "Name",
+            "license_plate": "Kennzeichen",
             "capacity_kwh": "Nutzbare Kapazität",
             "soc_entity": "Akkustand",
             "target_entity": "Entität für Ladeziel",
@@ -118,6 +121,7 @@
             "fuel_l100": "Benzinverbrauch zum Vergleich"
           },
           "data_description": {
+            "license_plate": "Optional. Erscheint auf dem PDF für den Arbeitgeber.",
             "soc_entity": "Sensor in %. Ohne ihn haben Ladevorgänge keinen Start- und Endstand.",
             "target_fixed": "Wird verwendet, wenn keine Entität für das Ladeziel gesetzt ist.",
             "target_source": "Fahrzeug: Das Auto stoppt selbst bei seinem Ziel. Zuhause: EVChargeData schaltet den Ladeschalter aus, wenn das Ziel erreicht ist.",
@@ -128,6 +132,7 @@
           "title": "Fahrzeug bearbeiten",
           "data": {
             "name": "Name",
+            "license_plate": "Kennzeichen",
             "capacity_kwh": "Nutzbare Kapazität",
             "soc_entity": "Akkustand",
             "target_entity": "Entität für Ladeziel",
@@ -137,6 +142,7 @@
             "fuel_l100": "Benzinverbrauch zum Vergleich"
           },
           "data_description": {
+            "license_plate": "Optional. Erscheint auf dem PDF für den Arbeitgeber.",
             "soc_entity": "Sensor in %. Ohne ihn haben Ladevorgänge keinen Start- und Endstand.",
             "target_fixed": "Wird verwendet, wenn keine Entität für das Ladeziel gesetzt ist.",
             "target_source": "Fahrzeug: Das Auto stoppt selbst bei seinem Ziel. Zuhause: EVChargeData schaltet den Ladeschalter aus, wenn das Ziel erreicht ist.",

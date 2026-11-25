@@ -24,6 +24,7 @@ Everything is done in the UI. The integration is a single entry; chargers and ve
 - *Off-peak now (binary sensor)* or *Off-peak windows* (e.g. `22:00-06:00`, several separated by commas; ignored when the binary sensor is set). The off-peak source also gives the off-peak/peak split shown in the panel, even with a price sensor.
 - *Day type* (optional): an entity whose state is the contract's day type, e.g. the Tempo colour (`sensor.rte_tempo_couleur_actuelle`). Each session then records its energy and cost per **tariff band** (day type × off-peak/peak): 1 band on a Base contract, 2 with off-peak/peak, 6 with Tempo. The price still comes from the price sensor or the fixed prices; a band is never guessed from a price.
 - *Reimbursement price (per kWh)* (optional): a flat price for a second statement, e.g. what an employer reimburses for charging a company car at home. It never changes the recorded cost.
+- *Name on the PDF statements* (optional): your name, printed on both PDF statements.
 - *Overview style*: Detailed or Compact.
 
 **Add charger**
@@ -38,6 +39,7 @@ Everything is done in the UI. The integration is a single entry; chargers and ve
 - *Name* and *Usable capacity* (kWh).
 - *Battery level* (optional): a sensor in %.
 - *Target level entity* (optional) or *Fixed target level* (used when no entity is set; 100 % by default).
+- *License plate* (optional): printed on the employer PDF.
 
 Chargers and vehicles can be reconfigured in place (Reconfigure on the sub-entry); the recorded history is kept. Each charger gets a **Vehicle** select entity: choose which vehicle is plugged in. A session takes the selected vehicle at its start. With a single vehicle there is nothing to do.
 
@@ -154,6 +156,7 @@ Tout se fait dans l'interface. L'intégration est une entrée unique ; chargeurs
 - *Off-peak now (binary sensor)* ou *Off-peak windows* (plages, p. ex. `22:00-06:00`, plusieurs séparées par des virgules ; ignorées si le capteur binaire est renseigné). Cette source donne aussi la répartition HC/HP affichée, même avec un capteur de prix.
 - *Type de jour* (facultatif) : une entité dont l'état est le type de jour du contrat, par exemple la couleur Tempo (`sensor.rte_tempo_couleur_actuelle`). Chaque session enregistre alors son énergie et son coût par **tranche** (type de jour × HC/HP) : 1 tranche en Base, 2 en HP/HC, 6 en Tempo. Le prix vient toujours du capteur de prix ou des prix fixes ; une tranche n'est jamais déduite d'un prix.
 - *Prix de remboursement (par kWh)* (facultatif) : un prix forfaitaire pour un second relevé, par exemple ce que rembourse un employeur pour la recharge d'une voiture de fonction à domicile. Il ne change jamais le coût enregistré.
+- *Nom sur les relevés PDF* (facultatif) : votre nom, imprimé sur les deux relevés PDF.
 - *Overview style* : Detailed (détaillée) ou Compact (compacte).
 
 **Ajouter un chargeur**
@@ -168,6 +171,7 @@ Tout se fait dans l'interface. L'intégration est une entrée unique ; chargeurs
 - *Name* et *Usable capacity* (capacité utile, kWh).
 - *Battery level* (facultatif) : capteur en %.
 - *Target level entity* (facultatif) ou *Fixed target level* (utilisé sans entité ; 100 % par défaut).
+- *Immatriculation* (facultatif) : imprimée sur le PDF employeur.
 
 Chargeurs et véhicules se reconfigurent sur place (Reconfigurer sur la sous-entrée) ; l'historique enregistré est conservé. Chaque chargeur a une entité de sélection **Véhicule** : choisissez quel véhicule est branché. La session prend le véhicule sélectionné à son début. Avec un seul véhicule, rien à faire.
 

@@ -178,3 +178,26 @@ async def test_options_store_a_reimbursement_price(hass):
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert entry.options["reimbursement_price"] == 0.34
+
+
+async def test_vehicle_flow_stores_a_license_plate(hass):
+    entry = MockConfigEntry(domain="charge_board")
+    entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    await _subentry(
+        hass, entry, "vehicle", {"name": "A290", "capacity_kwh": 52, "license_plate": "MI-AB 123"}
+    )
+    (sub,) = entry.subentries.values()
+    assert sub.data["license_plate"] == "MI-AB 123"
+
+
+async def test_options_store_a_statement_name(hass):
+    entry = MockConfigEntry(domain="charge_board")
+    entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"statement_name": "Seb"}
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert entry.options["statement_name"] == "Seb"

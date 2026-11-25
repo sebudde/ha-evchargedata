@@ -113,6 +113,31 @@ describe("statementPdf", () => {
     expect(out).toContain(hexOf("Fahrzeug"));
   });
 
+  it("shows the name on both statements and the plate on the employer one", () => {
+    const who = { holder: "Seb Budde", vehicleId: "v", plates: { v: "MI-AB 123" } };
+    const employer = ascii(statementPdf(input(who)));
+    expect(employer).toContain(hexOf("Seb Budde"));
+    expect(employer).toContain(hexOf("Kennzeichen:"));
+    expect(employer).toContain(hexOf("MI-AB 123"));
+    const landlord = ascii(statementPdf(input({ ...who, kind: "cost", price: null })));
+    expect(landlord).toContain(hexOf("Seb Budde"));
+    expect(landlord).not.toContain(hexOf("MI-AB 123"));
+  });
+
+  it("leaves out an empty name and a missing plate", () => {
+    const out = ascii(statementPdf(input({ holder: "  ", vehicleId: "v", plates: {} })));
+    expect(out).not.toContain(hexOf("Name:"));
+    expect(out).not.toContain(hexOf("Kennzeichen:"));
+  });
+
+  it("names each car by its plate in the vehicle column of the employer statement", () => {
+    const out = ascii(statementPdf(input({ vehicle: null, plates: { v: "MI-AB 123" } })));
+    expect(out).toContain(hexOf("MI-AB 123"));
+    const landlord = ascii(statementPdf(input({ kind: "cost", vehicle: null, plates: { v: "MI-AB 123" } })));
+    expect(landlord).not.toContain(hexOf("MI-AB 123"));
+    expect(landlord).toContain(hexOf("Alpine A290 GTS"));
+  });
+
   it("continues the table on further pages", () => {
     const many = Array.from({ length: 50 }, (_, i) => sess(String(i), NOV_3 + i * 3600 * 9, 4, 1.2));
     const out = ascii(statementPdf(input({ sessions: many })));

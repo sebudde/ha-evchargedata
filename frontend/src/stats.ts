@@ -243,11 +243,15 @@ export class ChargeBoardStats extends LitElement {
       const vid = this._vehicle || undefined;
       const { sessions } = await getSessions(this.hass, { month, ...(vid && { vehicle_id: vid }) });
       const lang = langOf(this.hass);
+      const vehicles = this._overview?.vehicles ?? [];
       const pdf = statementPdf({
         kind,
         month,
         sessions,
-        vehicle: vid ? (this._overview?.vehicles.find((v) => v.id === vid)?.name ?? null) : null,
+        vehicle: vid ? (vehicles.find((v) => v.id === vid)?.name ?? null) : null,
+        vehicleId: vid ?? null,
+        plates: Object.fromEntries(vehicles.map((v) => [v.id, v.plate])),
+        holder: this._stats!.statement_name,
         price: this._stats!.reimbursement_price,
         currency: this._stats!.currency,
         lang,

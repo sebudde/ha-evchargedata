@@ -57,6 +57,7 @@ CHARGER_SCHEMA = vol.Schema(
 VEHICLE_SCHEMA = vol.Schema(
     {
         vol.Required("name"): str,
+        vol.Optional("license_plate"): str,
         vol.Required("capacity_kwh"): _number(0.1, "kWh", 500),
         vol.Optional("soc_entity"): _entity("sensor"),
         vol.Optional("target_entity"): _entity("number", "input_number", "sensor"),
@@ -78,6 +79,7 @@ OPTIONS_SCHEMA = vol.Schema(
         vol.Optional("day_type_entity"): _entity("sensor", "select", "input_select"),
         vol.Optional("off_peak_windows"): str,
         vol.Optional("reimbursement_price"): _number("any", max_=10),
+        vol.Optional("statement_name"): str,
         vol.Optional("fuel_price_entity"): _entity("sensor", "input_number"),
         vol.Optional("fuel_price"): _number("any", max_=10),
         vol.Optional("overview_style", default="detailed"): selector.SelectSelector(

@@ -157,7 +157,7 @@ async def test_overview_estimated_end_only_when_known(hass, env, freezer):
     r = (await ws.receive_json())["result"]
     c = r["chargers"][0]
     assert (r["style"], r["currency"]) == ("detailed", hass.config.currency)
-    assert r["vehicles"] == [{"id": vid, "name": "Twingo"}]
+    assert r["vehicles"] == [{"id": vid, "name": "Twingo", "plate": None}]
     assert c["state"] == "free" and c["estimated_end"] is None and c["last_session"]["id"] == "a"
     assert c["vehicle"] == {
         "id": vid,
@@ -230,6 +230,7 @@ async def test_stats_without_a_reimbursement_price(env):
     await ws.send_json({"id": 1, "type": "charge_board/stats", "year": 2026})
     res = (await ws.receive_json())["result"]
     assert res["reimbursement_price"] is None
+    assert res["statement_name"] is None
     assert res["rows"][9]["reimbursement"] is None
 
 
@@ -237,7 +238,7 @@ async def test_stats_reimbursement_at_the_flat_price(hass, env):
     _hub, _cid, vid, ws = env
     entry = hass.config_entries.async_entries("charge_board")[0]
     hass.config_entries.async_update_entry(
-        entry, options={**entry.options, "reimbursement_price": 0.34}
+        entry, options={**entry.options, "reimbursement_price": 0.34, "statement_name": "Seb"}
     )
     await hass.async_block_till_done()  # the update listener reloads the entry
     hub = entry.runtime_data
@@ -245,6 +246,7 @@ async def test_stats_reimbursement_at_the_flat_price(hass, env):
     await ws.send_json({"id": 1, "type": "charge_board/stats", "year": 2026})
     res = (await ws.receive_json())["result"]
     assert res["reimbursement_price"] == 0.34
+    assert res["statement_name"] == "Seb"
     october = res["rows"][9]
     assert october["reimbursement"] == pytest.approx(3.4)
     assert october["cost"] == pytest.approx(3.1)  # the real cost stays as it is

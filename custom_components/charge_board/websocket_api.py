@@ -132,7 +132,10 @@ async def overview(hub: Hub, msg: dict) -> dict:
         "style": hub.options.get("overview_style", "detailed"),
         "currency": hub.hass.config.currency,
         "chargers": chargers,
-        "vehicles": [{"id": vid, "name": v["name"]} for vid, v in hub.vehicles.items()],
+        "vehicles": [
+            {"id": vid, "name": v["name"], "plate": v.get("license_plate")}
+            for vid, v in hub.vehicles.items()
+        ],
     }
 
 
@@ -265,6 +268,7 @@ async def stats(hub: Hub, msg: dict) -> dict:
         "total": total,
         "rolling": rolling,
         "reimbursement_price": price,
+        "statement_name": hub.options.get("statement_name"),
     }
 
 

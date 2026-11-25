@@ -67,7 +67,7 @@ export interface Overview {
   style: "detailed" | "compact";
   currency: string;
   chargers: ChargerOverview[];
-  vehicles: { id: string; name: string }[];
+  vehicles: { id: string; name: string; plate?: string | null }[];
 }
 
 export interface SessionsSummary {
@@ -140,6 +140,7 @@ export interface Stats {
   total: StatsRow;
   rolling: { current: StatsRow; previous: StatsRow }; // last 30 days and the 30 before
   reimbursement_price: number | null; // per kWh, e.g. what an employer reimburses
+  statement_name: string | null; // name shown on the PDF statements
 }
 
 export interface ConfigItem {

@@ -23,6 +23,7 @@
           "day_type_entity": "Type de jour (ex. couleur Tempo)",
           "off_peak_windows": "Plages heures creuses",
           "reimbursement_price": "Prix de remboursement (par kWh)",
+          "statement_name": "Nom sur les relevés PDF",
           "overview_style": "Style de l'aperçu",
           "notify_service": "Téléphone à notifier",
           "notifications": "Notifications actives",
@@ -33,6 +34,7 @@
           "price_entity": "Prioritaire sur les prix fixes.",
           "off_peak_windows": "Par exemple 22:00-06:00, plusieurs séparées par des virgules. Ignorées si un capteur binaire heures creuses est choisi.",
           "reimbursement_price": "Facultatif. Prix forfaitaire pour un second relevé, par ex. ce que rembourse l'employeur. Les statistiques affichent le montant par mois et l'exportent en PDF ; le coût enregistré ne change pas.",
+          "statement_name": "Facultatif. Votre nom, affiché sur les PDF employeur et propriétaire.",
           "notify_service": "L'application Home Assistant de ce téléphone reçoit le branchement, le démarrage, l'objectif atteint et le débranchement (avec le résumé de la session). Vide : aucune notification ; les événements charge_board_* sont émis quand même.",
           "fuel_price_entity": "Par exemple une station de l'intégration Prix Carburant. Prioritaire sur le prix fixe.",
           "day_type_entity": "Facultatif. Entité dont l'état est le type de jour du contrat (Tempo : sensor.rte_tempo_couleur_actuelle). Découpe les coûts par tranche dans les statistiques."
@@ -109,6 +111,7 @@
           "title": "Ajouter un véhicule",
           "data": {
             "name": "Nom",
+            "license_plate": "Immatriculation",
             "capacity_kwh": "Capacité utile",
             "soc_entity": "Niveau de batterie",
             "target_entity": "Entité du niveau visé",
@@ -118,6 +121,7 @@
             "fuel_l100": "Consommation essence de référence"
           },
           "data_description": {
+            "license_plate": "Facultatif. Affichée sur le PDF employeur.",
             "soc_entity": "Capteur en %. Sans lui, les sessions n'ont pas de niveau de départ ni d'arrivée.",
             "target_fixed": "Utilisé si aucune entité de niveau visé n'est choisie.",
             "target_source": "Le véhicule : la voiture s'arrête seule à son objectif. La maison : EVChargeData coupe l'interrupteur du chargeur quand l'objectif est atteint.",
@@ -128,6 +132,7 @@
           "title": "Modifier le véhicule",
           "data": {
             "name": "Nom",
+            "license_plate": "Immatriculation",
             "capacity_kwh": "Capacité utile",
             "soc_entity": "Niveau de batterie",
             "target_entity": "Entité du niveau visé",
@@ -137,6 +142,7 @@
             "fuel_l100": "Consommation essence de référence"
           },
           "data_description": {
+            "license_plate": "Facultatif. Affichée sur le PDF employeur.",
             "soc_entity": "Capteur en %. Sans lui, les sessions n'ont pas de niveau de départ ni d'arrivée.",
             "target_fixed": "Utilisé si aucune entité de niveau visé n'est choisie.",
             "target_source": "Le véhicule : la voiture s'arrête seule à son objectif. La maison : EVChargeData coupe l'interrupteur du chargeur quand l'objectif est atteint.",

@@ -12,6 +12,9 @@ export interface StatementInput {
   month: string; // "YYYY-MM"
   sessions: Session[]; // finished sessions of the month (any order)
   vehicle: string | null; // vehicle name; null = all vehicles (a vehicle column instead)
+  plates?: Record<string, string | null | undefined>; // vehicle id -> license plate
+  vehicleId?: string | null; // the vehicle shown (its plate goes on the employer statement)
+  holder?: string | null; // name shown on both statements
   price: number | null; // reimbursement per kWh (kind "reimbursement")
   currency: string;
   lang: Lang;
@@ -24,6 +27,7 @@ export interface StatementLine {
   start: number | null;
   end: number | null;
   vehicle: string | null;
+  vehicleId: string | null;
   charger: string | null;
   kwh: number;
   price: number | null; // per kWh: the flat price, or the session's mean price
@@ -52,6 +56,7 @@ export function statement(kind: StatementKind, sessions: Session[], price: numbe
       start: startOf(s),
       end: s.charge_end ?? s.unplugged_at,
       vehicle: s.vehicle_name ?? null,
+      vehicleId: s.vehicle_id,
       charger: s.charger_name ?? null,
       kwh: s.energy_kwh,
     };
@@ -140,13 +145,17 @@ export function statementPdf(input: StatementInput): Uint8Array {
     return sameDay ? time(l.end) : `${formatDay(l.end, locale, timeZone)} ${time(l.end)}`;
   };
 
+  // The employer statement names the car by its plate (the vehicle column: plate, else name).
+  const plateOf = (vid: string | null | undefined) =>
+    kind === "reimbursement" && vid ? input.plates?.[vid]?.trim() || null : null;
+  const vehicleCell = (l: StatementLine) => plateOf(l.vehicleId) ?? l.vehicle ?? DASH;
   const columns: Column[] = [
     { label: "col_nr", width: 24, align: "right", cell: (_, i) => String(i + 1) },
     { label: "col_date", width: 66, align: "left", cell: (l) => (l.start == null ? DASH : date(l.start)) },
     { label: "col_start", width: 42, align: "left", cell: (l) => time(l.start) },
     { label: "col_end", width: input.vehicle == null ? 72 : 0, align: "left", cell: endText },
     ...(input.vehicle == null
-      ? [{ label: "col_vehicle" as Key, width: 0, align: "left" as const, cell: (l: StatementLine) => l.vehicle ?? DASH }]
+      ? [{ label: "col_vehicle" as Key, width: 0, align: "left" as const, cell: vehicleCell }]
       : []),
     { label: "col_kwh", width: 54, align: "right", cell: (l) => kwhText(l.kwh) },
     { label: "col_price", width: 64, align: "right", cell: (l) => rate(l.price) },
@@ -180,8 +189,12 @@ export function statementPdf(input: StatementInput): Uint8Array {
   const first = Date.UTC(year, mon - 1, 1) / 1000;
   const last = Date.UTC(year, mon, 0, 12) / 1000;
   const chargers = [...new Set(data.lines.map((l) => l.charger).filter((c): c is string => !!c))];
+  const holder = input.holder?.trim();
+  const plate = input.vehicle == null ? null : plateOf(input.vehicleId);
   const meta: [Key, string][] = [
+    ...(holder ? [["pdf_name", holder] as [Key, string]] : []),
     ["pdf_vehicle", input.vehicle ?? tr("all_vehicles")],
+    ...(plate ? [["pdf_plate", plate] as [Key, string]] : []),
     ["pdf_charger", chargers.length ? chargers.join(", ") : DASH],
     ["pdf_period", `${date(first, "UTC")} – ${date(last, "UTC")}`],
     ...(kind === "reimbursement" ? [["pdf_rate", tr("pdf_rate_value", { price: rate(input.price) })] as [Key, string]] : []),
