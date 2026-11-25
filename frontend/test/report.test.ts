@@ -95,7 +95,7 @@ describe("statementPdf", () => {
   it("writes the title, the rate and the total in German", () => {
     const out = ascii(statementPdf(input()));
     expect(out.startsWith("%PDF-1.4")).toBe(true);
-    for (const text of ["Ladestrom-Erstattung", "November 2026", "0,34 € pro kWh", "5,10 €", "15,00", "22:00"]) {
+    for (const text of ["Ladestrom-Erstattung", "November 2026", "0,34 € pro kWh", "5,10 €", "15,00", "03.11.2026 22:00", "04.11.2026 01:00"]) {
       expect(out).toContain(hexOf(text));
     }
   });
@@ -136,6 +136,14 @@ describe("statementPdf", () => {
     const landlord = ascii(statementPdf(input({ kind: "cost", vehicle: null, plates: { v: "MI-AB 123" } })));
     expect(landlord).not.toContain(hexOf("MI-AB 123"));
     expect(landlord).toContain(hexOf("Alpine A290 GTS"));
+  });
+
+  it("shows prices per kWh with two decimals and no word about Home Assistant", () => {
+    const out = ascii(statementPdf(input({ kind: "cost", price: null, sessions: [sess("a", NOV_3, 9.87, 3.06)] })));
+    expect(out).toContain(hexOf("0,31 €"));
+    expect(out).not.toContain(hexOf("0,3100"));
+    expect(out).not.toContain(hexOf("Home Assistant"));
+    expect(ascii(statementPdf(input()))).not.toContain(hexOf("Home Assistant"));
   });
 
   it("continues the table on further pages", () => {

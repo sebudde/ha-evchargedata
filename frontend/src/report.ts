@@ -1,7 +1,7 @@
 // Monthly statement as a PDF: the reimbursement at a flat price per kWh (e.g. for an employer)
 // or the recorded cost (e.g. for a landlord), one line per charging session.
 import type { Session } from "./api";
-import { DASH, formatCost, formatDay, formatTime } from "./format";
+import { DASH, formatCost, formatTime } from "./format";
 import { t, type Key, type Lang } from "./i18n";
 import { PdfDoc, fit, textWidth } from "./pdf";
 
@@ -122,28 +122,14 @@ export function statementPdf(input: StatementInput): Uint8Array {
   const kwhText = (v: number) =>
     plain(v.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
   const money = (v: number | null) => formatCost(v, currency, locale);
-  // The flat rate as entered (0,34 €); the mean prices of the cost statement all with 4 decimals.
-  const rate = (v: number | null, digits = kind === "cost" ? 4 : 2) =>
-    v == null
-      ? DASH
-      : plain(
-          new Intl.NumberFormat(locale, {
-            style: "currency",
-            currency,
-            minimumFractionDigits: digits,
-            maximumFractionDigits: 4,
-          }).format(v),
-        );
+  // Prices per kWh with two decimals, like the amounts.
+  const rate = (v: number | null) => formatCost(v, currency, locale);
   const date = (ts: number, zone = timeZone) =>
     new Intl.DateTimeFormat(locale, { day: "2-digit", month: "2-digit", year: "numeric", timeZone: zone }).format(
       new Date(ts * 1000),
     );
-  const time = (ts: number | null) => (ts == null ? DASH : formatTime(ts, locale, timeZone));
-  const endText = (l: StatementLine) => {
-    if (l.end == null) return DASH;
-    const sameDay = l.start != null && formatDay(l.start, locale, timeZone) === formatDay(l.end, locale, timeZone);
-    return sameDay ? time(l.end) : `${formatDay(l.end, locale, timeZone)} ${time(l.end)}`;
-  };
+  // Start and end alike: "02.11.2026 21:20".
+  const dateTime = (ts: number | null) => (ts == null ? DASH : `${date(ts)} ${formatTime(ts, locale, timeZone)}`);
 
   // The employer statement names the car by its plate (the vehicle column: plate, else name).
   const plateOf = (vid: string | null | undefined) =>
@@ -151,9 +137,8 @@ export function statementPdf(input: StatementInput): Uint8Array {
   const vehicleCell = (l: StatementLine) => plateOf(l.vehicleId) ?? l.vehicle ?? DASH;
   const columns: Column[] = [
     { label: "col_nr", width: 24, align: "right", cell: (_, i) => String(i + 1) },
-    { label: "col_date", width: 66, align: "left", cell: (l) => (l.start == null ? DASH : date(l.start)) },
-    { label: "col_start", width: 42, align: "left", cell: (l) => time(l.start) },
-    { label: "col_end", width: input.vehicle == null ? 72 : 0, align: "left", cell: endText },
+    { label: "col_start", width: 92, align: "left", cell: (l) => dateTime(l.start) },
+    { label: "col_end", width: input.vehicle == null ? 92 : 0, align: "left", cell: (l) => dateTime(l.end) },
     ...(input.vehicle == null
       ? [{ label: "col_vehicle" as Key, width: 0, align: "left" as const, cell: vehicleCell }]
       : []),
